@@ -1,6 +1,10 @@
 # ローカル開発用の設定
 .claude/
 
+# 問題文・解答例の元テキスト（照合・修正したものを content.json に変換して使う）
+cases/*/question.txt
+cases/*/answer.txt
+
 # OSが作るファイル
 Thumbs.db
 desktop.ini

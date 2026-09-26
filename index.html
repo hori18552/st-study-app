@@ -9,7 +9,7 @@
   <link rel="apple-touch-icon" href="icons/icon-180.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="ST学習">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=2">
 </head>
 <body>
   <header class="bar">
@@ -26,13 +26,9 @@
     <h2 id="d-title" class="d-title"></h2>
     <p id="d-source" class="source"></p>
 
-    <a id="d-diagram-link" class="diagram" target="_blank" rel="noopener">
-      <img id="d-diagram" alt="ケースの図解">
-      <span class="hint">タップで拡大</span>
-    </a>
-
     <p id="d-no-audio" class="no-audio" hidden>🎧 音声は準備中です</p>
     <section id="d-player" class="player">
+      <div class="player-label">🎧 ケース解説（NotebookLM）</div>
       <audio id="d-audio" controls preload="metadata"></audio>
       <div class="speeds" role="group" aria-label="再生速度">
         <button data-rate="1">1.0x</button>
@@ -42,14 +38,70 @@
       </div>
     </section>
 
-    <section class="summary">
-      <h3>3行まとめ</h3>
-      <ul id="d-summary"></ul>
+    <nav class="tabs" role="tablist">
+      <button data-tab="diagram" role="tab">図解</button>
+      <button data-tab="question" role="tab">問題</button>
+      <button data-tab="answer" role="tab">解答</button>
+    </nav>
+
+    <section id="tab-diagram" class="tab-panel">
+      <a id="d-diagram-link" class="diagram" target="_blank" rel="noopener">
+        <img id="d-diagram" alt="ケースの図解">
+        <span class="hint">タップで拡大</span>
+      </a>
+      <section class="summary">
+        <h3>3行まとめ</h3>
+        <ul id="d-summary"></ul>
+      </section>
+    </section>
+
+    <section id="tab-question" class="tab-panel" hidden>
+      <div class="tts" data-tts="question">
+        <button class="tts-play">▶ 問題文を読み上げ</button>
+        <div class="tts-rates">
+          <button data-rate="1">1.0x</button>
+          <button data-rate="1.25">1.25x</button>
+          <button data-rate="1.5">1.5x</button>
+        </div>
+      </div>
+      <div class="ev-toggle">
+        <button id="ev-toggle-btn">根拠マーカーを表示</button>
+        <span class="ev-help">文字をなぞって選ぶと、マーカーを引けます</span>
+      </div>
+      <div id="q-text" class="q-text"></div>
+    </section>
+
+    <section id="tab-answer" class="tab-panel" hidden>
+      <div class="tts" data-tts="answer">
+        <button class="tts-play">▶ 設問と解答を読み上げ</button>
+        <div class="tts-rates">
+          <button data-rate="1">1.0x</button>
+          <button data-rate="1.25">1.25x</button>
+          <button data-rate="1.5">1.5x</button>
+        </div>
+      </div>
+      <div class="type-legend">
+        <span class="type type-extract">抜粋</span>問題文をほぼそのまま
+        <span class="type type-rephrase">抜粋＋言い換え</span>問いの形に整える
+        <span class="type type-compose">構成</span>複数の情報から組み立てる
+      </div>
+      <div id="a-list" class="a-list"></div>
+      <details id="a-intent" class="intent">
+        <summary>出題趣旨</summary>
+        <p></p>
+      </details>
     </section>
 
     <button id="d-done" class="done"></button>
   </main>
 
-  <script src="app.js"></script>
+  <div id="mark-bar" class="mark-bar" hidden>
+    <button data-mark="hl">🟨 マーカー</button>
+    <button data-mark="ul">下線</button>
+    <button data-mark="del" hidden>🗑 マーカーを消す</button>
+    <button data-mark="cancel">キャンセル</button>
+  </div>
+
+  <script src="app.js?v=2"></script>
 </body>
 </html>
