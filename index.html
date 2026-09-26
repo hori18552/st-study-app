@@ -9,7 +9,7 @@
   <link rel="apple-touch-icon" href="icons/icon-180.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="ST学習">
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
   <header class="bar">
@@ -65,6 +65,7 @@
           <button data-rate="2">2.0x</button>
           <button data-rate="2.5">2.5x</button>
         </div>
+        <select class="tts-voice" aria-label="読み上げの声" hidden></select>
       </div>
       <div class="ev-toggle">
         <button id="ev-toggle-btn">根拠マーカーを表示</button>
@@ -83,6 +84,7 @@
           <button data-rate="2">2.0x</button>
           <button data-rate="2.5">2.5x</button>
         </div>
+        <select class="tts-voice" aria-label="読み上げの声" hidden></select>
       </div>
       <div class="type-legend">
         <span class="type type-extract">抜粋</span>問題文をほぼそのまま
@@ -122,6 +124,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=5"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>

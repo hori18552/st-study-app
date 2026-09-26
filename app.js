@@ -448,6 +448,7 @@ function setupAnswers() {
 
 // 読み上げの出だしが切れる声があるので、先頭に短い間を入れる
 const TTS_PAD = "、";
+const VOICE_KEY = "st-study-voice";
 
 const tts = {
   owner: null, // 読み上げ中のタブ（"question" | "answer"）
@@ -459,18 +460,50 @@ const tts = {
   positions: {}, // タブごとの「続きから」の位置 { index, offset }
   token: 0, // 止めた・読み直した発話の通知を無視するための番号
 
-  // 速度の設定が素直に効く声を優先する
+  voices() {
+    return speechSynthesis.getVoices().filter((v) => v.lang.startsWith("ja"));
+  },
+
+  // 保存した声 → 端末内の声 → インターネット経由の声 の順に選ぶ。
+  // インターネット経由の声（Chrome の Google の声など）は、文の出だしが切れやすく、
+  // 長い文章を途中で打ち切る不具合もあるため後回しにする。
   pickVoice() {
-    const voices = speechSynthesis.getVoices().filter((v) => v.lang.startsWith("ja"));
-    const prefs = [/Google/, /Kyoko|O-ren|Otoya/, /Nanami|Keita/, /Haruka|Ayumi|Sayaka|Ichiro/];
+    const voices = this.voices();
+    let saved = null;
+    try {
+      saved = localStorage.getItem(VOICE_KEY);
+    } catch {
+      // 保存できない環境では毎回自動で選ぶ
+    }
+    const byName = voices.find((v) => v.name === saved);
+    if (byName) {
+      this.voice = byName;
+      return;
+    }
+    const local = voices.filter((v) => v.localService);
+    const prefs = [/Kyoko|O-ren|Otoya|Hattori/, /Google/, /Haruka|Ayumi|Sayaka|Ichiro/];
     for (const p of prefs) {
-      const v = voices.find((x) => p.test(x.name));
+      const v = local.find((x) => p.test(x.name));
       if (v) {
         this.voice = v;
         return;
       }
     }
-    this.voice = voices[0] || null;
+    this.voice = local[0] || voices[0] || null;
+  },
+
+  setVoice(name) {
+    const v = this.voices().find((x) => x.name === name);
+    if (!v) return;
+    this.voice = v;
+    try {
+      localStorage.setItem(VOICE_KEY, name);
+    } catch {
+      // 保存できなくても、この画面の間は選んだ声を使う
+    }
+    if (!this.owner) return;
+    const p = this.resumePoint();
+    this.speakFrom(p.index, p.offset);
   },
 
   play(owner, items, from = { index: 0, offset: 0 }) {
@@ -480,11 +513,6 @@ const tts = {
       return;
     }
     $("d-audio").pause();
-    // インターネット経由の声は長い文を途中で打ち切るので、その場合だけ1文ずつに分ける
-    if (this.voice && !this.voice.localService) {
-      items = items.flatMap((it) => sentences(it.text).map((t) => ({ ...it, text: t })));
-      from = { index: 0, offset: 0 };
-    }
     this.owner = owner;
     this.queue = items;
     const ok = from.index < items.length;
@@ -494,31 +522,43 @@ const tts = {
     this.speakFrom(this.index, this.offset);
   },
 
-  // 残りの項目をまとめて順番待ちに入れ、読み始めと単語の通知で位置を追う
+  // 残りの項目をまとめて順番待ちに入れ、読み始めと単語の通知で位置を追う。
+  // 端末内の声は段落ごと、インターネット経由の声は長文で止まるので1文ずつ読む。
   speakFrom(from, offset) {
     const token = ++this.token;
+    const bySentence = this.voice && !this.voice.localService;
     speechSynthesis.cancel();
     // cancel の直後に speak すると無視されるブラウザがあるので、少し待つ
     setTimeout(() => {
       if (token !== this.token || !this.owner) return;
+      const pieces = [];
       for (let i = from; i < this.queue.length; i++) {
-        const base = i === from ? offset : 0;
-        const u = new SpeechSynthesisUtterance(TTS_PAD + this.queue[i].text.slice(base));
+        const text = this.queue[i].text;
+        let pos = i === from ? offset : 0;
+        const rest = text.slice(pos);
+        for (const part of bySentence ? sentences(rest) : [rest]) {
+          pieces.push({ i, start: pos, text: part });
+          pos += part.length;
+        }
+      }
+      pieces.forEach((pc, k) => {
+        const u = new SpeechSynthesisUtterance(TTS_PAD + pc.text);
         u.lang = "ja-JP";
         u.rate = this.rate;
         if (this.voice) u.voice = this.voice;
         u.onstart = () => {
           if (token !== this.token) return;
-          this.index = i;
-          this.offset = base;
-          this.highlight();
+          const moved = this.index !== pc.i;
+          this.index = pc.i;
+          this.offset = pc.start;
+          if (moved || k === 0) this.highlight();
           this.updateButtons();
         };
         u.onboundary = (e) => {
           if (token !== this.token) return;
-          this.offset = base + Math.max(0, e.charIndex - TTS_PAD.length);
+          this.offset = pc.start + Math.max(0, e.charIndex - TTS_PAD.length);
         };
-        if (i === this.queue.length - 1) {
+        if (k === pieces.length - 1) {
           u.onend = () => {
             if (token !== this.token) return;
             this.positions[this.owner] = null;
@@ -528,7 +568,7 @@ const tts = {
           };
         }
         speechSynthesis.speak(u);
-      }
+      });
     }, 80);
   },
 
@@ -636,11 +676,37 @@ function answerItems() {
   });
 }
 
+function renderVoiceOptions() {
+  const voices = tts.voices();
+  document.querySelectorAll(".tts-voice").forEach((sel) => {
+    sel.hidden = voices.length < 2;
+    sel.replaceChildren(
+      ...voices.map((v) => {
+        const o = document.createElement("option");
+        o.value = v.name;
+        o.textContent = `声：${v.name.replace(/ - Japanese \(Japan\)|Microsoft |\(Natural\)/g, "").trim()}${v.localService ? "" : "（オンライン）"}`;
+        o.selected = tts.voice && v.name === tts.voice.name;
+        return o;
+      })
+    );
+  });
+}
+
 function setupTts() {
   if ("speechSynthesis" in window) {
-    tts.pickVoice();
-    speechSynthesis.addEventListener("voiceschanged", () => tts.pickVoice());
+    const refresh = () => {
+      tts.pickVoice();
+      renderVoiceOptions();
+    };
+    refresh();
+    speechSynthesis.addEventListener("voiceschanged", refresh);
   }
+  document.querySelectorAll(".tts-voice").forEach((sel) => {
+    sel.addEventListener("change", () => {
+      tts.setVoice(sel.value);
+      renderVoiceOptions();
+    });
+  });
   document.querySelectorAll(".tts").forEach((box) => {
     const owner = box.dataset.tts;
     const items = () => (owner === "question" ? questionItems() : answerItems());

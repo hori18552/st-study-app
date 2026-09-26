@@ -351,3 +351,13 @@ body.has-mini main { padding-bottom: 90px; }
 .viewer-body img { display: block; width: 100%; height: auto; background: #fff; }
 .viewer-body img.zoom { width: 250%; max-width: none; }
 body.no-scroll { overflow: hidden; }
+
+.tts-voice {
+  flex: 1 1 100%;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--text);
+  font-size: .85rem;
+}
