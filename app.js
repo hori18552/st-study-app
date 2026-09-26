@@ -58,7 +58,7 @@ let evidenceMode = "off"; // "off" | "all" | 設問id
 // ---------- 一覧 ----------
 
 function renderList() {
-  tts.stop();
+  tts.reset();
   current = null;
   $("bar-title").textContent = "ITストラテジスト";
   $("back").hidden = true;
@@ -124,6 +124,7 @@ async function renderDetail(id, tab) {
   renderDone(p.done);
 
   if (!current || current.case.id !== id) {
+    tts.reset();
     evidenceMode = "off";
     current = { case: c, content: null };
     if (c.content) {
@@ -174,7 +175,7 @@ function showTab(tab) {
   document.querySelectorAll(".tab-panel").forEach((el) => {
     el.hidden = el.id !== `tab-${tab}`;
   });
-  if (tts.owner && tts.owner !== tab) tts.stop();
+  if (tts.owner && tts.owner !== tab) tts.pause();
   hideMarkBar();
 }
 
@@ -274,6 +275,7 @@ function renderQuestion() {
     if (s.heading) {
       const h = document.createElement("h4");
       h.textContent = s.heading;
+      h.dataset.para = `h-${s.heading}`;
       frag.append(h);
     }
     for (const para of s.paras) {
@@ -442,20 +444,30 @@ function setupAnswers() {
 // ---------- 読み上げ（ブラウザの音声合成） ----------
 
 const tts = {
-  owner: null,
+  owner: null, // 読み上げ中のタブ（"question" | "answer"）
   queue: [],
   index: 0,
   rate: 1,
   voice: null,
+  positions: {}, // タブごとの「続きから」の位置
+  token: 0, // 止めた・読み直した発話の終了通知を無視するための番号
 
+  // 速度の設定が素直に効く声を優先する
   pickVoice() {
     const voices = speechSynthesis.getVoices().filter((v) => v.lang.startsWith("ja"));
-    this.voice =
-      voices.find((v) => /Kyoko|O-ren|Google|Nanami|Haruka/.test(v.name)) || voices[0] || null;
+    const prefs = [/Google/, /Kyoko|O-ren|Otoya/, /Nanami|Keita/, /Haruka|Ayumi|Sayaka|Ichiro/];
+    for (const p of prefs) {
+      const v = voices.find((x) => p.test(x.name));
+      if (v) {
+        this.voice = v;
+        return;
+      }
+    }
+    this.voice = voices[0] || null;
   },
 
-  start(owner, items) {
-    this.stop();
+  play(owner, items, from = 0) {
+    this.pause();
     if (!("speechSynthesis" in window)) {
       alert("このブラウザは読み上げに対応していません。");
       return;
@@ -463,49 +475,80 @@ const tts = {
     $("d-audio").pause();
     this.owner = owner;
     this.queue = items;
-    this.index = 0;
+    this.index = from < items.length ? from : 0;
     this.updateButtons();
-    this.speakNext();
+    this.speakCurrent();
   },
 
-  speakNext() {
+  speakCurrent() {
     document.querySelectorAll(".reading").forEach((el) => el.classList.remove("reading"));
     if (this.index >= this.queue.length) {
-      this.stop();
+      this.positions[this.owner] = 0;
+      this.owner = null;
+      this.updateButtons();
       return;
     }
     const item = this.queue[this.index];
-    if (item.el) {
-      item.el.classList.add("reading");
-      item.el.scrollIntoView({ block: "center" });
+    const el = item.find();
+    if (el) {
+      el.classList.add("reading");
+      el.scrollIntoView({ block: "center" });
     }
+    const token = ++this.token;
     const u = new SpeechSynthesisUtterance(item.text);
     u.lang = "ja-JP";
     u.rate = this.rate;
     if (this.voice) u.voice = this.voice;
     u.onend = () => {
-      if (this.owner === null) return;
+      if (token !== this.token) return;
       this.index++;
-      this.speakNext();
+      this.positions[this.owner] = this.index;
+      this.speakCurrent();
     };
     speechSynthesis.speak(u);
   },
 
-  stop() {
+  // 止めた位置は positions に残し、次は続きから読む
+  pause() {
+    if (this.owner) this.positions[this.owner] = this.index;
     this.owner = null;
+    this.token++;
     if ("speechSynthesis" in window) speechSynthesis.cancel();
     document.querySelectorAll(".reading").forEach((el) => el.classList.remove("reading"));
     this.updateButtons();
   },
 
+  // 読んでいる途中なら、今の文を新しい速度で読み直す
+  setRate(rate) {
+    this.rate = rate;
+    this.updateButtons();
+    if (!this.owner) return;
+    const token = ++this.token;
+    speechSynthesis.cancel();
+    // cancel の直後に speak すると無視されるブラウザがあるので、少し待つ
+    setTimeout(() => {
+      if (token === this.token && this.owner) this.speakCurrent();
+    }, 80);
+  },
+
+  reset() {
+    this.pause();
+    this.positions = {};
+    this.updateButtons();
+  },
+
   updateButtons() {
     document.querySelectorAll(".tts").forEach((box) => {
+      const owner = box.dataset.tts;
       const btn = box.querySelector(".tts-play");
-      const playing = this.owner === box.dataset.tts;
+      const playing = this.owner === owner;
+      const resumable = !playing && (this.positions[owner] || 0) > 0;
       btn.classList.toggle("on", playing);
       btn.textContent = playing
-        ? "■ 読み上げを止める"
-        : box.dataset.tts === "question" ? "▶ 問題文を読み上げ" : "▶ 設問と解答を読み上げ";
+        ? "⏸ 一時停止"
+        : resumable ? "▶ 続きから"
+        : owner === "question" ? "▶ 問題文を読み上げ" : "▶ 設問と解答を読み上げ";
+      box.querySelector(".tts-restart").hidden = !(playing || resumable);
       box.querySelectorAll(".tts-rates button").forEach((b) => {
         b.classList.toggle("on", Number(b.dataset.rate) === this.rate);
       });
@@ -518,10 +561,13 @@ function sentences(text) {
   return text.match(/[^。]+。?/g) || [];
 }
 
+// 読み上げ中にマーカーで問題文が描き直されても追えるよう、要素は読む直前に探す
 function questionItems() {
   const items = [];
   $("q-text").querySelectorAll("h4, .para").forEach((el) => {
-    sentences(el.textContent).forEach((t) => items.push({ text: t, el }));
+    const key = el.dataset.para;
+    const find = () => $("q-text").querySelector(`[data-para="${key}"]`);
+    sentences(el.textContent).forEach((t) => items.push({ text: t, find }));
   });
   return items;
 }
@@ -529,12 +575,13 @@ function questionItems() {
 function answerItems() {
   const items = [];
   for (const q of current.content.questions) {
-    const card = $("a-list").querySelector(`[data-q="${q.id}"]`);
-    items.push({ text: `${q.label.replace("(", "の").replace(")", "")}。`, el: card });
-    sentences(q.text).forEach((t) => items.push({ text: t, el: card }));
-    items.push({ text: `解答例。${q.answer}。`, el: card });
-    items.push({ text: `分類は、${TYPE_LABELS[q.type] || q.type}。`, el: card });
-    if (q.point) sentences(q.point).forEach((t) => items.push({ text: t, el: card }));
+    const find = () => $("a-list").querySelector(`[data-q="${q.id}"]`);
+    const push = (text) => items.push({ text, find });
+    push(`${q.label.replace("(", "の").replace(")", "")}。`);
+    sentences(q.text).forEach(push);
+    push(`解答例。${q.answer}。`);
+    push(`分類は、${TYPE_LABELS[q.type] || q.type}。`);
+    if (q.point) sentences(q.point).forEach(push);
   }
   return items;
 }
@@ -545,22 +592,25 @@ function setupTts() {
     speechSynthesis.addEventListener("voiceschanged", () => tts.pickVoice());
   }
   document.querySelectorAll(".tts").forEach((box) => {
+    const owner = box.dataset.tts;
+    const items = () => (owner === "question" ? questionItems() : answerItems());
     box.querySelector(".tts-play").addEventListener("click", () => {
-      const owner = box.dataset.tts;
       if (tts.owner === owner) {
-        tts.stop();
+        tts.pause();
         return;
       }
       if (!current || !current.content) return;
-      tts.start(owner, owner === "question" ? questionItems() : answerItems());
+      tts.play(owner, items(), tts.positions[owner] || 0);
+    });
+    box.querySelector(".tts-restart").addEventListener("click", () => {
+      if (!current || !current.content) return;
+      tts.play(owner, items(), 0);
     });
     box.querySelectorAll(".tts-rates button").forEach((b) => {
-      b.addEventListener("click", () => {
-        tts.rate = Number(b.dataset.rate);
-        tts.updateButtons();
-      });
+      b.addEventListener("click", () => tts.setRate(Number(b.dataset.rate)));
     });
   });
+  tts.updateButtons();
 }
 
 // ---------- 画面遷移とイベント ----------
@@ -593,7 +643,7 @@ function setupEvents() {
 
   // 再生位置を数秒おきに保存
   let lastSaved = 0;
-  audio.addEventListener("play", () => tts.stop());
+  audio.addEventListener("play", () => tts.pause());
   audio.addEventListener("timeupdate", () => {
     if (Math.abs(audio.currentTime - lastSaved) < 5) return;
     lastSaved = audio.currentTime;

@@ -9,7 +9,7 @@
   <link rel="apple-touch-icon" href="icons/icon-180.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="ST学習">
-  <link rel="stylesheet" href="style.css?v=2">
+  <link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
   <header class="bar">
@@ -58,10 +58,12 @@
     <section id="tab-question" class="tab-panel" hidden>
       <div class="tts" data-tts="question">
         <button class="tts-play">▶ 問題文を読み上げ</button>
+        <button class="tts-restart" hidden>⟲ 最初から</button>
         <div class="tts-rates">
           <button data-rate="1">1.0x</button>
-          <button data-rate="1.25">1.25x</button>
           <button data-rate="1.5">1.5x</button>
+          <button data-rate="2">2.0x</button>
+          <button data-rate="2.5">2.5x</button>
         </div>
       </div>
       <div class="ev-toggle">
@@ -74,10 +76,12 @@
     <section id="tab-answer" class="tab-panel" hidden>
       <div class="tts" data-tts="answer">
         <button class="tts-play">▶ 設問と解答を読み上げ</button>
+        <button class="tts-restart" hidden>⟲ 最初から</button>
         <div class="tts-rates">
           <button data-rate="1">1.0x</button>
-          <button data-rate="1.25">1.25x</button>
           <button data-rate="1.5">1.5x</button>
+          <button data-rate="2">2.0x</button>
+          <button data-rate="2.5">2.5x</button>
         </div>
       </div>
       <div class="type-legend">
@@ -102,6 +106,6 @@
     <button data-mark="cancel">キャンセル</button>
   </div>
 
-  <script src="app.js?v=2"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>
