@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>ST学習</title>
+  <meta name="theme-color" content="#1f4e79">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="ST学習">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="bar">
+    <button id="back" class="back" hidden aria-label="一覧に戻る">‹ 戻る</button>
+    <h1 id="bar-title">ITストラテジスト</h1>
+  </header>
+
+  <main id="list-view">
+    <p id="progress" class="progress"></p>
+    <ul id="case-list" class="case-list"></ul>
+  </main>
+
+  <main id="detail-view" hidden>
+    <h2 id="d-title" class="d-title"></h2>
+    <p id="d-source" class="source"></p>
+
+    <a id="d-diagram-link" class="diagram" target="_blank" rel="noopener">
+      <img id="d-diagram" alt="ケースの図解">
+      <span class="hint">タップで拡大</span>
+    </a>
+
+    <p id="d-no-audio" class="no-audio" hidden>🎧 音声は準備中です</p>
+    <section id="d-player" class="player">
+      <audio id="d-audio" controls preload="metadata"></audio>
+      <div class="speeds" role="group" aria-label="再生速度">
+        <button data-rate="1">1.0x</button>
+        <button data-rate="1.25">1.25x</button>
+        <button data-rate="1.5">1.5x</button>
+        <button data-rate="2">2.0x</button>
+      </div>
+    </section>
+
+    <section class="summary">
+      <h3>3行まとめ</h3>
+      <ul id="d-summary"></ul>
+    </section>
+
+    <button id="d-done" class="done"></button>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

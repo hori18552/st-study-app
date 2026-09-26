@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 1180" font-family="'Hiragino Sans','Noto Sans JP','Yu Gothic',sans-serif">
+  <defs>
+    <marker id="arw" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 L10 5 L0 10z" fill="#777"/>
+    </marker>
+  </defs>
+  <rect width="600" height="1180" fill="#ffffff"/>
+
+  <!-- タイトル -->
+  <text x="300" y="36" text-anchor="middle" font-size="21" font-weight="bold" fill="#1f4e79">C社：地域密着ドラッグストア</text>
+  <text x="300" y="60" text-anchor="middle" font-size="13" fill="#666">R7春 ST 午後Ⅰ 問3 ／ 理念「地域住民の健康的な暮らしを支える社会インフラ」</text>
+
+  <!-- ① K地域の環境 -->
+  <rect x="20" y="78" width="560" height="170" rx="12" fill="#f3f4f6" stroke="#9aa0a6"/>
+  <text x="36" y="104" font-size="16" font-weight="bold" fill="#333">① K地域の環境（顧客はどんな人？）</text>
+  <text x="36" y="132" font-size="14" fill="#333">・郊外の古い住宅地に<tspan font-weight="bold">シニア世代</tspan>が多い</text>
+  <text x="36" y="156" font-size="14" fill="#333">・団地リノベで<tspan font-weight="bold">若い世代</tspan>も流入中</text>
+  <text x="36" y="180" font-size="14" fill="#333">・用事は「<tspan font-weight="bold">近く・1か所</tspan>」で済ませたい → 囲い込みのチャンス</text>
+  <text x="36" y="204" font-size="14" fill="#333">・郊外に医療機関が少なく、<tspan font-weight="bold">都市部の病院</tspan>で受診</text>
+  <text x="36" y="228" font-size="14" fill="#333">・入退院時など生活シーンに合わせた<tspan font-weight="bold">健康相談の場がない</tspan></text>
+
+  <line x1="300" y1="250" x2="300" y2="270" stroke="#777" stroke-width="2" marker-end="url(#arw)"/>
+
+  <!-- ② これまでの戦略 -->
+  <text x="20" y="292" font-size="16" font-weight="bold" fill="#1f4e79">② これまでの4つの戦略（強み）</text>
+  <g font-size="13" fill="#333">
+    <rect x="20" y="302" width="274" height="98" rx="10" fill="#e8f1fa" stroke="#1f4e79"/>
+    <text x="32" y="324" font-weight="bold" fill="#1f4e79">出店</text>
+    <text x="32" y="346">車で5分の「小商圏」の中心に出店</text>
+    <text x="32" y="366">日用品・食料品を毎日低価格</text>
+    <text x="32" y="386">化粧品（高収益）で客単価アップ</text>
+
+    <rect x="306" y="302" width="274" height="98" rx="10" fill="#e8f1fa" stroke="#1f4e79"/>
+    <text x="318" y="324" font-weight="bold" fill="#1f4e79">調剤薬</text>
+    <text x="318" y="346">処方箋を出して、待ち時間に買い物</text>
+    <text x="318" y="366">病院帰りに最寄り店へ立ち寄り</text>
+    <text x="318" y="386">処方箋画像の事前送付（IT活用）</text>
+
+    <rect x="20" y="410" width="274" height="98" rx="10" fill="#e8f1fa" stroke="#1f4e79"/>
+    <text x="32" y="432" font-weight="bold" fill="#1f4e79">小売売場の運営</text>
+    <text x="32" y="454">売場・棚割りを全店で標準化</text>
+    <text x="32" y="474">POS→本社で一括自動発注</text>
+    <text x="32" y="494">空いた時間を顧客対応へ</text>
+
+    <rect x="306" y="410" width="274" height="98" rx="10" fill="#e8f1fa" stroke="#1f4e79"/>
+    <text x="318" y="432" font-weight="bold" fill="#1f4e79">商品開発・企画</text>
+    <text x="318" y="454">地域の仕入先と強い協力関係</text>
+    <text x="318" y="474">オーガニック食品でPB商品開発</text>
+    <text x="318" y="494">化粧品メーカーとメイク体験会</text>
+  </g>
+
+  <line x1="300" y1="512" x2="300" y2="532" stroke="#777" stroke-width="2" marker-end="url(#arw)"/>
+
+  <!-- 環境変化 -->
+  <rect x="20" y="538" width="560" height="44" rx="10" fill="#fdecea" stroke="#c62828"/>
+  <text x="300" y="566" text-anchor="middle" font-size="15" font-weight="bold" fill="#c62828">⚡ 他のドラッグストアがK地域の近くまで進出 → 戦略強化が必要</text>
+
+  <line x1="300" y1="584" x2="300" y2="604" stroke="#777" stroke-width="2" marker-end="url(#arw)"/>
+
+  <!-- ③ 課題 -->
+  <text x="20" y="626" font-size="16" font-weight="bold" fill="#c62828">③ 店舗の課題（顧客ニーズ）</text>
+  <g font-size="13" fill="#333">
+    <rect x="20" y="636" width="274" height="140" rx="10" fill="#fff5f5" stroke="#c62828"/>
+    <text x="32" y="658" font-weight="bold" fill="#c62828">調剤売場</text>
+    <text x="32" y="680">・服薬指導を自宅で家族と聞きたい</text>
+    <text x="32" y="700">・病気予防の生活習慣の情報が欲しい</text>
+    <text x="32" y="720">・薬剤師の確認作業（薬歴・飲み合</text>
+    <text x="32" y="740">　わせ等）が重く、混雑時に待たせる</text>
+
+    <rect x="306" y="636" width="274" height="140" rx="10" fill="#fff5f5" stroke="#c62828"/>
+    <text x="318" y="658" font-weight="bold" fill="#c62828">小売売場（若い世代）</text>
+    <text x="318" y="680">モノより「生活の質」を高めたい</text>
+    <text x="318" y="700">・健康増進・体形維持の情報が欲しい</text>
+    <text x="318" y="720">・素材にこだわった化粧品を使いたい</text>
+    <text x="318" y="740">・自分に合うスキンケア・化粧を</text>
+    <text x="318" y="760">　知りたい</text>
+  </g>
+
+  <line x1="300" y1="780" x2="300" y2="800" stroke="#777" stroke-width="2" marker-end="url(#arw)"/>
+
+  <!-- ④ 新方針 -->
+  <rect x="20" y="806" width="560" height="96" rx="12" fill="#1f4e79"/>
+  <text x="36" y="832" font-size="16" font-weight="bold" fill="#fff">④ 新たな方針：ニーズに合うサービスで LTV を拡大</text>
+  <text x="36" y="854" font-size="13" fill="#fff">店舗（リアル）× オンラインの融合で CX を高め、薬剤師の負担も減らす</text>
+  <text x="36" y="877" font-size="13" fill="#fff">施策1：服薬指導・残薬管理・栄養指導などを店舗でもオンラインでも</text>
+  <text x="36" y="895" font-size="13" fill="#fff">施策2：仕入先と協力し、顧客ニーズに合わせたサービスを提供</text>
+
+  <line x1="300" y1="904" x2="300" y2="924" stroke="#777" stroke-width="2" marker-end="url(#arw)"/>
+
+  <!-- ⑤ システム -->
+  <text x="20" y="946" font-size="16" font-weight="bold" fill="#2e7d32">⑤ 構築する2つのシステム</text>
+  <g font-size="13" fill="#333">
+    <rect x="20" y="956" width="340" height="150" rx="10" fill="#e8f5e9" stroke="#2e7d32"/>
+    <text x="32" y="978" font-weight="bold" fill="#2e7d32">健康生活アプリ（顧客向け）</text>
+    <text x="32" y="1002"><tspan font-weight="bold">オンラインサポート</tspan>：来店せず</text>
+    <text x="32" y="1020">　服薬指導・残薬管理・健康相談</text>
+    <text x="32" y="1044"><tspan font-weight="bold">ヘルスケアアドバイス</tspan>：行動記録</text>
+    <text x="32" y="1062">　→AIで健康スコア、PB商品レシピ</text>
+    <text x="32" y="1086"><tspan font-weight="bold">ビューティアドバイス</tspan>：AI肌診断・</text>
+    <text x="32" y="1102">　ARメイク、メーカー体験会の予約</text>
+
+    <rect x="372" y="956" width="208" height="150" rx="10" fill="#e8f5e9" stroke="#2e7d32"/>
+    <text x="384" y="978" font-weight="bold" fill="#2e7d32">服薬指導補助</text>
+    <text x="384" y="996" font-weight="bold" fill="#2e7d32">システム（薬剤師向け）</text>
+    <text x="384" y="1022">処方箋データ・服薬履歴</text>
+    <text x="384" y="1042">から、薬の重複チェックと</text>
+    <text x="384" y="1062">服薬指導コメントを作成</text>
+  </g>
+
+  <!-- 用語 -->
+  <rect x="20" y="1120" width="560" height="50" rx="10" fill="#fff8e1" stroke="#f9a825"/>
+  <text x="32" y="1141" font-size="12" fill="#5d4a00"><tspan font-weight="bold">LTV</tspan>（顧客生涯価値）：1人の顧客が長い付き合いの中でもたらす利益の合計</text>
+  <text x="32" y="1160" font-size="12" fill="#5d4a00"><tspan font-weight="bold">CX</tspan>（顧客体験価値）：買う前〜買った後まで含めた体験の良さ</text>
+</svg>

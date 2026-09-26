@@ -1,0 +1,7 @@
+# ローカル開発用の設定
+.claude/
+
+# OSが作るファイル
+Thumbs.db
+desktop.ini
+.DS_Store
