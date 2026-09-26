@@ -9,7 +9,7 @@
   <link rel="apple-touch-icon" href="icons/icon-180.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="ST学習">
-  <link rel="stylesheet" href="style.css?v=3">
+  <link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
   <header class="bar">
@@ -106,6 +106,22 @@
     <button data-mark="cancel">キャンセル</button>
   </div>
 
-  <script src="app.js?v=3"></script>
+  <div id="tts-mini" class="tts-mini" hidden>
+    <span id="tts-mini-label"></span>
+    <button id="tts-mini-pause">⏸</button>
+    <button id="tts-mini-go"></button>
+  </div>
+
+  <div id="diagram-viewer" class="diagram-viewer" hidden>
+    <div class="viewer-bar">
+      <span>タップで拡大／縮小</span>
+      <button id="diagram-viewer-close">✕ 閉じる</button>
+    </div>
+    <div class="viewer-body">
+      <img id="diagram-viewer-img" alt="ケースの図解（拡大）">
+    </div>
+  </div>
+
+  <script src="app.js?v=4"></script>
 </body>
 </html>

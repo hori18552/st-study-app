@@ -59,6 +59,8 @@ let evidenceMode = "off"; // "off" | "all" | 設問id
 
 function renderList() {
   tts.reset();
+  $("diagram-viewer").hidden = true;
+  document.body.classList.remove("no-scroll");
   current = null;
   $("bar-title").textContent = "ITストラテジスト";
   $("back").hidden = true;
@@ -175,8 +177,9 @@ function showTab(tab) {
   document.querySelectorAll(".tab-panel").forEach((el) => {
     el.hidden = el.id !== `tab-${tab}`;
   });
-  if (tts.owner && tts.owner !== tab) tts.pause();
   hideMarkBar();
+  tts.updateButtons();
+  if (tts.owner === tab) tts.highlight();
 }
 
 function markRate(rate) {
@@ -477,35 +480,54 @@ const tts = {
     this.queue = items;
     this.index = from < items.length ? from : 0;
     this.updateButtons();
-    this.speakCurrent();
+    this.speakFrom(this.index);
   },
 
-  speakCurrent() {
-    document.querySelectorAll(".reading").forEach((el) => el.classList.remove("reading"));
-    if (this.index >= this.queue.length) {
-      this.positions[this.owner] = 0;
-      this.owner = null;
-      this.updateButtons();
-      return;
-    }
-    const item = this.queue[this.index];
-    const el = item.find();
-    if (el) {
-      el.classList.add("reading");
-      el.scrollIntoView({ block: "center" });
-    }
+  // 1文ずつ「読み終わったら次」を始めると、文の出だしが切れる声がある。
+  // そのため残りの文をまとめて順番待ちに入れ、読み始めの通知で位置を追う。
+  speakFrom(from) {
     const token = ++this.token;
-    const u = new SpeechSynthesisUtterance(item.text);
-    u.lang = "ja-JP";
-    u.rate = this.rate;
-    if (this.voice) u.voice = this.voice;
-    u.onend = () => {
-      if (token !== this.token) return;
-      this.index++;
-      this.positions[this.owner] = this.index;
-      this.speakCurrent();
-    };
-    speechSynthesis.speak(u);
+    speechSynthesis.cancel();
+    // cancel の直後に speak すると無視されるブラウザがあるので、少し待つ
+    setTimeout(() => {
+      if (token !== this.token || !this.owner) return;
+      for (let i = from; i < this.queue.length; i++) {
+        const u = new SpeechSynthesisUtterance(this.queue[i].text);
+        u.lang = "ja-JP";
+        u.rate = this.rate;
+        if (this.voice) u.voice = this.voice;
+        u.onstart = () => {
+          if (token !== this.token) return;
+          this.index = i;
+          this.positions[this.owner] = i;
+          this.highlight();
+        };
+        if (i === this.queue.length - 1) {
+          u.onend = () => {
+            if (token !== this.token) return;
+            this.positions[this.owner] = 0;
+            this.owner = null;
+            this.clearHighlight();
+            this.updateButtons();
+          };
+        }
+        speechSynthesis.speak(u);
+      }
+    }, 80);
+  },
+
+  highlight() {
+    this.clearHighlight();
+    const item = this.queue[this.index];
+    const el = item && item.find();
+    if (!el) return;
+    el.classList.add("reading");
+    // 別のタブを見ている間は、画面を動かさない
+    if (!$(`tab-${this.owner}`).hidden) el.scrollIntoView({ block: "center" });
+  },
+
+  clearHighlight() {
+    document.querySelectorAll(".reading").forEach((el) => el.classList.remove("reading"));
   },
 
   // 止めた位置は positions に残し、次は続きから読む
@@ -514,21 +536,15 @@ const tts = {
     this.owner = null;
     this.token++;
     if ("speechSynthesis" in window) speechSynthesis.cancel();
-    document.querySelectorAll(".reading").forEach((el) => el.classList.remove("reading"));
+    this.clearHighlight();
     this.updateButtons();
   },
 
-  // 読んでいる途中なら、今の文を新しい速度で読み直す
+  // 読んでいる途中なら、今の文から新しい速度で読み直す
   setRate(rate) {
     this.rate = rate;
     this.updateButtons();
-    if (!this.owner) return;
-    const token = ++this.token;
-    speechSynthesis.cancel();
-    // cancel の直後に speak すると無視されるブラウザがあるので、少し待つ
-    setTimeout(() => {
-      if (token === this.token && this.owner) this.speakCurrent();
-    }, 80);
+    if (this.owner) this.speakFrom(this.index);
   },
 
   reset() {
@@ -553,6 +569,15 @@ const tts = {
         b.classList.toggle("on", Number(b.dataset.rate) === this.rate);
       });
     });
+    // 読み上げ中のタブの外にいるときだけ、画面下にミニバーを出す
+    const away = this.owner && $(`tab-${this.owner}`).hidden;
+    $("tts-mini").hidden = !away;
+    document.body.classList.toggle("has-mini", !!away);
+    if (away) {
+      $("tts-mini-label").textContent =
+        this.owner === "question" ? "🔊 問題文を読み上げ中" : "🔊 設問と解答を読み上げ中";
+      $("tts-mini-go").textContent = this.owner === "question" ? "問題文へ" : "解答へ";
+    }
   },
 };
 
@@ -610,7 +635,29 @@ function setupTts() {
       b.addEventListener("click", () => tts.setRate(Number(b.dataset.rate)));
     });
   });
+  $("tts-mini-pause").addEventListener("click", () => tts.pause());
+  $("tts-mini-go").addEventListener("click", () => showTab(tts.owner));
   tts.updateButtons();
+}
+
+// ---------- 図解の拡大表示 ----------
+
+// 別の画面で開くと読み上げが止まることがあるので、アプリの中で拡大する
+function setupDiagramViewer() {
+  const viewer = $("diagram-viewer");
+  const img = $("diagram-viewer-img");
+  $("d-diagram-link").addEventListener("click", (e) => {
+    e.preventDefault();
+    img.src = $("d-diagram").src;
+    img.classList.remove("zoom");
+    viewer.hidden = false;
+    document.body.classList.add("no-scroll");
+  });
+  img.addEventListener("click", () => img.classList.toggle("zoom"));
+  $("diagram-viewer-close").addEventListener("click", () => {
+    viewer.hidden = true;
+    document.body.classList.remove("no-scroll");
+  });
 }
 
 // ---------- 画面遷移とイベント ----------
@@ -666,6 +713,7 @@ function setupEvents() {
   setupMarkers();
   setupAnswers();
   setupTts();
+  setupDiagramViewer();
   window.addEventListener("hashchange", route);
 }
 
